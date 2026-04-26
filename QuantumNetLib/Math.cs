@@ -12,23 +12,12 @@
 
         public static float Sqrt(float a)
         {
-            var x = a;
-            float y = 1;
-            const float e = 0.000001f;
-            while (x - y > e)
-            {
-                x = (x + y) / 2;
-                y = a / x;
-            }
-
-            return x;
+            return (float)System.Math.Sqrt(a);
         }
 
         public static float Pow(float a, float b)
         {
-            float result = 1;
-            for (var i = 0; i < b; i++) result *= a;
-            return result;
+            return (float)System.Math.Pow(a, b);
         }
 
         public static float Sin(float a)

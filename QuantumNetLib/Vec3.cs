@@ -79,12 +79,14 @@
 
         public static bool operator ==(Vec3 a, Vec3 b)
         {
+            if (ReferenceEquals(a, b)) return true;
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null)) return false;
             return a.X == b.X && a.Y == b.Y && a.Z == b.Z;
         }
 
         public static bool operator !=(Vec3 a, Vec3 b)
         {
-            return a.X != b.X || a.Y != b.Y || a.Z != b.Z;
+            return !(a == b);
         }
 
         // Override ToString() method

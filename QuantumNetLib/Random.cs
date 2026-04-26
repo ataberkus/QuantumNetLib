@@ -222,7 +222,7 @@ namespace QuantumNetLib
         public int GetRandom(int min, int max)
         {
             if (max <= min)
-                new Exception("Maximum value must be greater than minimum value", 20);
+                throw new Exception("Maximum value must be greater than minimum value", 20);
 
             var range = (long)max - min;
             return (int)((Next() % range) + min);

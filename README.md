@@ -8,7 +8,7 @@ QuantumNetLib is a custom C# library that provides a set of foundational utiliti
 - `Vec2` & `Vec3`: Classes representing two and three-dimensional vectors with related operations.
 - `Random`: A pseudo-random number generator class for generating various random data types.
 - `Math`: Provides a collection of mathematical functions and utilities.
-- `Linq`: A set of methods that offer LINQ-like query operations for arrays.
+- `LINQ`: A set of methods that offer LINQ-like query operations for arrays.
 - `Exception`: Custom exception handling utilities.
 
 ## Getting Started
@@ -32,8 +32,8 @@ Below are quick usage examples for each major component of the library:
 # Vector<T>
 ```c#
 var vector = new QuantumNetLib.Vector<int>();
-vector.push_back(1);
-vector.push_back(2);
+vector.PushBack(1);
+vector.PushBack(2);
 // Continue using the vector as needed
 ```
 
@@ -54,10 +54,10 @@ var vec2 = new QuantumNetLib.Vec2(1, 2);
 var vec3 = new QuantumNetLib.Vec3(1, 2, 3);
 ```
 
-# Linq
+# LINQ
 ```c#
 int[] numbers = { 1, 2, 3, 4 };
-var evenNumbers = QuantumNetLib.Linq.Where(numbers, x => x % 2 == 0);
+var evenNumbers = QuantumNetLib.LINQ.Where(numbers, x => x % 2 == 0);
 ```
 
 # Contributing

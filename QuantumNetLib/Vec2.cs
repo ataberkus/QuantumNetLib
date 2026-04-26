@@ -70,12 +70,14 @@
 
         public static bool operator ==(Vec2 a, Vec2 b)
         {
+            if (ReferenceEquals(a, b)) return true;
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null)) return false;
             return a.X == b.X && a.Y == b.Y;
         }
 
         public static bool operator !=(Vec2 a, Vec2 b)
         {
-            return a.X != b.X || a.Y != b.Y;
+            return !(a == b);
         }
 
         public override string ToString()
