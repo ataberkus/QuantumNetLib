@@ -1,15 +1,13 @@
 ﻿namespace QuantumNetLib
 {
-    public class Exception
+    public class Exception : System.Exception
     {
-        public Exception(string message, int errorCode)
+        public Exception(string message, int errorCode) : base(message)
         {
-            Message = message;
             ErrorCode = errorCode;
         }
 
-        public string Message { get; set; }
-        public int ErrorCode { get; set; }
+        public int ErrorCode { get; }
 
         public override string ToString()
         {

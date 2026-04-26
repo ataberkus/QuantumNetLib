@@ -19,12 +19,12 @@
         {
             get
             {
-                if (index < 0 || index >= Data.Length) new Exception("Index out of range", 1);
+                if (index < 0 || index >= Size) throw new Exception("Index out of range", 1);
                 return Data[index];
             }
             set
             {
-                if (index < 0 || index >= Data.Length) new Exception("Index out of range", 1);
+                if (index < 0 || index >= Size) throw new Exception("Index out of range", 1);
                 Data[index] = value;
             }
         }
@@ -49,24 +49,26 @@
         // Remove element at the end
         public void PopBack()
         {
-            if (Size == 0) new Exception("Vector is empty", 2);
+            if (Size == 0) throw new Exception("Vector is empty", 2);
             Size--;
+            Data[Size] = default;
         }
 
         // Get element at index
         public void Erase(int index)
         {
-            if (index < 0 || index >= Size) new Exception("Index out of range", 1);
+            if (index < 0 || index >= Size) throw new Exception("Index out of range", 1);
 
             for (var i = index; i < Size - 1; i++) Data[i] = Data[i + 1];
             Size--;
+            Data[Size] = default;
         }
 
 
         // Insert element at index
         public void Insert(int index, T item)
         {
-            if (index < 0 || index >= Size) new Exception("Index out of range", 1);
+            if (index < 0 || index > Size) throw new Exception("Index out of range", 1);
 
             if (Size == Data.Length) Resize();
 
@@ -97,7 +99,7 @@
             var newVector = new Vector<T>();
             newVector.Data = new T[Data.Length];
             Data.CopyTo(newVector.Data, 0);
-            // If you have other fields, copy them here as well
+            newVector.Size = Size;
             return newVector;
         }
 

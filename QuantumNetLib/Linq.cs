@@ -126,12 +126,12 @@ namespace QuantumNetLib
             foreach (var item in array)
                 if (predicate(item))
                 {
-                    if (found) new Exception("Sequence contains more than one element", 1);
+                    if (found) throw new Exception("Sequence contains more than one element", 1);
                     result = item;
                     found = true;
                 }
 
-            if (!found) new Exception("Sequence contains no elements", 2);
+            if (!found) throw new Exception("Sequence contains no elements", 2);
             return result;
         }
 
@@ -142,7 +142,7 @@ namespace QuantumNetLib
             foreach (var item in array)
                 if (predicate(item))
                 {
-                    if (found) new Exception("Sequence contains more than one element", 1);
+                    if (found) throw new Exception("Sequence contains more than one element", 1);
                     result = item;
                     found = true;
                 }
@@ -152,20 +152,21 @@ namespace QuantumNetLib
 
         public static T Single<T>(T[] array)
         {
-            if (array.Length > 1) new Exception("Sequence contains more than one element", 1);
+            if (array.Length == 0) throw new Exception("Sequence contains no elements", 2);
+            if (array.Length > 1) throw new Exception("Sequence contains more than one element", 1);
             return array[0];
         }
 
         public static T SingleOrDefault<T>(T[] array)
         {
-            if (array.Length > 1) new Exception("Sequence contains more than one element", 1);
+            if (array.Length > 1) throw new Exception("Sequence contains more than one element", 1);
 
             return array.Length > 0 ? array[0] : default;
         }
 
         public static T ElementAt<T>(T[] array, int index)
         {
-            if (index < 0 || index >= array.Length) new Exception("Index out of range", 1);
+            if (index < 0 || index >= array.Length) throw new Exception("Index out of range", 1);
             return array[index];
         }
 
