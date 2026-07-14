@@ -2,127 +2,131 @@
 {
     public class Vector<T>
     {
-        // Delegate for custom comparison
         public delegate int Comparison(T x, T y);
+
+        private T[] _data;
 
         public Vector()
         {
-            Data = new T[4]; // Initial capacity
+            _data = new T[4];
             Size = 0;
         }
 
-        public T[] Data { get; set; }
+        public Vector(int capacity)
+        {
+            if (capacity < 0)
+                throw new QException("Capacity must be non-negative", 3);
+
+            _data = new T[capacity == 0 ? 4 : capacity];
+            Size = 0;
+        }
+
         public int Size { get; private set; }
 
-        // Indexer
+        public int Capacity => _data.Length;
+
         public T this[int index]
         {
             get
             {
-                if (index < 0 || index >= Size) throw new Exception("Index out of range", 1);
-                return Data[index];
+                if (index < 0 || index >= Size) throw new QException("Index out of range", 1);
+                return _data[index];
             }
             set
             {
-                if (index < 0 || index >= Size) throw new Exception("Index out of range", 1);
-                Data[index] = value;
+                if (index < 0 || index >= Size) throw new QException("Index out of range", 1);
+                _data[index] = value;
             }
         }
 
-        // Resize array
-        private void Resize()
+        private void EnsureCapacity(int minCapacity)
         {
-            var newCapacity = Data.Length == 0 ? 4 : Data.Length * 2;
+            if (minCapacity <= _data.Length) return;
+
+            var newCapacity = _data.Length == 0 ? 4 : _data.Length * 2;
+            if (newCapacity < minCapacity) newCapacity = minCapacity;
+
             var temp = new T[newCapacity];
-            Data.CopyTo(temp, 0);
-            Data = temp;
+            System.Array.Copy(_data, temp, Size);
+            _data = temp;
         }
 
-        // Add element at the end
         public void PushBack(T item)
         {
-            if (Size == Data.Length) Resize();
-            Data[Size] = item;
+            EnsureCapacity(Size + 1);
+            _data[Size] = item;
             Size++;
         }
 
-        // Remove element at the end
         public void PopBack()
         {
-            if (Size == 0) throw new Exception("Vector is empty", 2);
+            if (Size == 0) throw new QException("Vector is empty", 2);
             Size--;
-            Data[Size] = default;
+            _data[Size] = default;
         }
 
-        // Get element at index
         public void Erase(int index)
         {
-            if (index < 0 || index >= Size) throw new Exception("Index out of range", 1);
+            if (index < 0 || index >= Size) throw new QException("Index out of range", 1);
 
-            for (var i = index; i < Size - 1; i++) Data[i] = Data[i + 1];
+            for (var i = index; i < Size - 1; i++) _data[i] = _data[i + 1];
             Size--;
-            Data[Size] = default;
+            _data[Size] = default;
         }
 
-
-        // Insert element at index
         public void Insert(int index, T item)
         {
-            if (index < 0 || index > Size) throw new Exception("Index out of range", 1);
+            if (index < 0 || index > Size) throw new QException("Index out of range", 1);
 
-            if (Size == Data.Length) Resize();
+            EnsureCapacity(Size + 1);
 
-            for (var i = Size; i > index; i--) Data[i] = Data[i - 1];
-            Data[index] = item;
+            for (var i = Size; i > index; i--) _data[i] = _data[i - 1];
+            _data[index] = item;
             Size++;
         }
 
-        // Sort using a custom comparison function
         public void Sort(Comparison comparison)
         {
-            // Implement a sorting algorithm here, using 'comparison' to compare elements
+            if (comparison == null) throw new QException("Comparison cannot be null", 4);
+
             for (var i = 0; i < Size - 1; i++)
             {
                 for (var j = 0; j < Size - i - 1; j++)
                 {
-                    if (comparison(Data[j], Data[j + 1]) > 0)
+                    if (comparison(_data[j], _data[j + 1]) > 0)
                     {
-                        // Swap elements
-                        (Data[j], Data[j + 1]) = (Data[j + 1], Data[j]);
+                        (_data[j], _data[j + 1]) = (_data[j + 1], _data[j]);
                     }
                 }
             }
         }
 
-        public Vector<T> Clone() // Deep copy
+        public Vector<T> Clone()
         {
-            var newVector = new Vector<T>();
-            newVector.Data = new T[Data.Length];
-            Data.CopyTo(newVector.Data, 0);
+            var newVector = new Vector<T>(_data.Length);
+            System.Array.Copy(_data, newVector._data, Size);
             newVector.Size = Size;
             return newVector;
         }
 
-        // Get string
         public override string ToString()
         {
             var result = "";
-            for (var i = 0; i < Size; i++) result += Data[i] + " ";
+            for (var i = 0; i < Size; i++) result += _data[i] + " ";
             return result;
         }
 
-        // Get string with new line
         public string ToStringLine()
         {
             var result = "";
-            for (var i = 0; i < Size; i++) result += Data[i] + "\n";
+            for (var i = 0; i < Size; i++) result += _data[i] + "\n";
             return result;
         }
 
         public T[] ToArray()
         {
             var result = new T[Size];
-            for (var i = 0; i < Size; i++) result[i] = Data[i];
+            System.Array.Copy(_data, result, Size);
             return result;
         }
     }

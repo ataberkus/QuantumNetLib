@@ -1,13 +1,7 @@
 ﻿namespace QuantumNetLib
 {
-    public class Vec2
+    public struct Vec2 : System.IEquatable<Vec2>
     {
-        public Vec2()
-        {
-            X = 0;
-            Y = 0;
-        }
-
         public Vec2(float x, float y)
         {
             X = x;
@@ -17,17 +11,39 @@
         public float X { get; set; }
         public float Y { get; set; }
 
-        protected bool Equals(Vec2 other)
+        public float Length => QMath.Sqrt(X * X + Y * Y);
+
+        public float LengthSquared => X * X + Y * Y;
+
+        public Vec2 Normalized
+        {
+            get
+            {
+                var len = Length;
+                if (len == 0f) return new Vec2(0f, 0f);
+                return this / len;
+            }
+        }
+
+        public static float Dot(Vec2 a, Vec2 b)
+        {
+            return a.X * b.X + a.Y * b.Y;
+        }
+
+        /// <summary>2D cross product (signed parallelogram area).</summary>
+        public static float Cross(Vec2 a, Vec2 b)
+        {
+            return a.X * b.Y - a.Y * b.X;
+        }
+
+        public bool Equals(Vec2 other)
         {
             return X.Equals(other.X) && Y.Equals(other.Y);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((Vec2)obj);
+            return obj is Vec2 other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -48,6 +64,11 @@
             return new Vec2(a.X - b.X, a.Y - b.Y);
         }
 
+        public static Vec2 operator -(Vec2 a)
+        {
+            return new Vec2(-a.X, -a.Y);
+        }
+
         public static Vec2 operator *(Vec2 a, float b)
         {
             return new Vec2(a.X * b, a.Y * b);
@@ -63,15 +84,8 @@
             return new Vec2(a.X / b, a.Y / b);
         }
 
-        public static Vec2 operator /(float a, Vec2 b)
-        {
-            return new Vec2(a / b.X, a / b.Y);
-        }
-
         public static bool operator ==(Vec2 a, Vec2 b)
         {
-            if (ReferenceEquals(a, b)) return true;
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null)) return false;
             return a.X == b.X && a.Y == b.Y;
         }
 

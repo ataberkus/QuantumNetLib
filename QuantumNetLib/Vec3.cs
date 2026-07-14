@@ -1,16 +1,7 @@
 ﻿namespace QuantumNetLib
 {
-    public class Vec3
+    public struct Vec3 : System.IEquatable<Vec3>
     {
-        // Default constructor
-        public Vec3()
-        {
-            X = 0;
-            Y = 0;
-            Z = 0;
-        }
-
-        // Constructor with parameters
         public Vec3(float x, float y, float z)
         {
             X = x;
@@ -22,17 +13,41 @@
         public float Y { get; set; }
         public float Z { get; set; }
 
-        protected bool Equals(Vec3 other)
+        public float Length => QMath.Sqrt(X * X + Y * Y + Z * Z);
+
+        public float LengthSquared => X * X + Y * Y + Z * Z;
+
+        public Vec3 Normalized
+        {
+            get
+            {
+                var len = Length;
+                if (len == 0f) return new Vec3(0f, 0f, 0f);
+                return this / len;
+            }
+        }
+
+        public static float Dot(Vec3 a, Vec3 b)
+        {
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+        }
+
+        public static Vec3 Cross(Vec3 a, Vec3 b)
+        {
+            return new Vec3(
+                a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
+                a.X * b.Y - a.Y * b.X);
+        }
+
+        public bool Equals(Vec3 other)
         {
             return X.Equals(other.X) && Y.Equals(other.Y) && Z.Equals(other.Z);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((Vec3)obj);
+            return obj is Vec3 other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -46,7 +61,6 @@
             }
         }
 
-        // Operator overloading
         public static Vec3 operator +(Vec3 a, Vec3 b)
         {
             return new Vec3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
@@ -55,6 +69,11 @@
         public static Vec3 operator -(Vec3 a, Vec3 b)
         {
             return new Vec3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+        }
+
+        public static Vec3 operator -(Vec3 a)
+        {
+            return new Vec3(-a.X, -a.Y, -a.Z);
         }
 
         public static Vec3 operator *(Vec3 a, float b)
@@ -72,15 +91,8 @@
             return new Vec3(a.X / b, a.Y / b, a.Z / b);
         }
 
-        public static Vec3 operator /(float a, Vec3 b)
-        {
-            return new Vec3(a / b.X, a / b.Y, a / b.Z);
-        }
-
         public static bool operator ==(Vec3 a, Vec3 b)
         {
-            if (ReferenceEquals(a, b)) return true;
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null)) return false;
             return a.X == b.X && a.Y == b.Y && a.Z == b.Z;
         }
 
@@ -89,7 +101,6 @@
             return !(a == b);
         }
 
-        // Override ToString() method
         public override string ToString()
         {
             return $"({X}, {Y}, {Z})";

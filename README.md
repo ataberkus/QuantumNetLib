@@ -1,67 +1,81 @@
 # QuantumNetLib
 
-QuantumNetLib is a custom C# library that provides a set of foundational utilities and mathematical constructs for .NET applications. This library includes a vector implementation resembling C++'s `std::vector`, a pseudo-random number generator, and various mathematical and LINQ-like operations.
+QuantumNetLib is a C# utility library with a dynamic `Vector<T>`, 2D/3D math vectors, a Park–Miller PRNG, math helpers, and LINQ-style array helpers.
 
 ## Features
 
-- `Vector<T>`: A dynamic array class with functionality similar to C++'s `std::vector`.
-- `Vec2` & `Vec3`: Classes representing two and three-dimensional vectors with related operations.
-- `Random`: A pseudo-random number generator class for generating various random data types.
-- `Math`: Provides a collection of mathematical functions and utilities.
-- `LINQ`: A set of methods that offer LINQ-like query operations for arrays.
-- `Exception`: Custom exception handling utilities.
+- `Vector<T>`: Dynamic array with push/pop/insert/erase/sort (C++ `std::vector`-style API)
+- `Vec2` & `Vec3`: Value-type vectors with operators, length, normalize, dot, and cross
+- `QRandom`: Park–Miller LCG with shuffle, choose, and weighted selection
+- `QMath`: Math helpers backed by `System.Math` for accuracy
+- `QLinq`: LINQ-style query helpers for arrays
+- `QException`: Exception type with an error code
+
+## Prerequisites
+
+- .NET SDK 8.0+ (library targets `netstandard2.0`)
 
 ## Getting Started
 
-To use QuantumNetLib in your project, clone this repository and include the .cs files in your project or compile it into a DLL.
-
 ```bash
-git clone https://github.com/DeQuex/QuantumNetLib.git
-
+git clone https://github.com/ataberkus/QuantumNetLib.git
+cd QuantumNetLib
+dotnet build
+dotnet test
 ```
-## Prerequisites
-.NET Framework 4.8
-Visual Studio 2022 (recommended)
 
-## Installing
-After cloning the repository, add the QuantumNetLib project to your solution or reference the compiled DLL in your C# project.
+Add a project reference to `QuantumNetLib/QuantumNetLib.csproj`, or reference the built DLL.
 
-# Usage
-Below are quick usage examples for each major component of the library:
+## Usage
 
-# Vector<T>
-```c#
+### Vector<T>
+
+```csharp
 var vector = new QuantumNetLib.Vector<int>();
 vector.PushBack(1);
 vector.PushBack(2);
-// Continue using the vector as needed
+var copy = vector.ToArray(); // { 1, 2 }
 ```
 
-# Random
-```c#
-var random = new QuantumNetLib.Random();
-int randomNumber = random.Next(0, 100);
+### QRandom
+
+```csharp
+var random = new QuantumNetLib.QRandom(42);
+int value = random.Next(0, 100); // [0, 100)
+random.Shuffle(copy);
 ```
 
-# Math
-```c#
-float randomValue = QuantumNetLib.Math.Random(0f, 10f);
+### QMath
+
+```csharp
+float value = QuantumNetLib.QMath.Sin(QuantumNetLib.QMath.PI / 2f);
+float mapped = QuantumNetLib.QMath.Map(5f, 0f, 10f, 0f, 1f);
 ```
 
-# Vec2 & Vec3
-```c#
-var vec2 = new QuantumNetLib.Vec2(1, 2);
-var vec3 = new QuantumNetLib.Vec3(1, 2, 3);
+### Vec2 & Vec3
+
+```csharp
+var a = new QuantumNetLib.Vec2(3, 4);
+var unit = a.Normalized;          // length ≈ 1
+float dot = QuantumNetLib.Vec2.Dot(a, new QuantumNetLib.Vec2(1, 0));
+
+var n = QuantumNetLib.Vec3.Cross(
+    new QuantumNetLib.Vec3(1, 0, 0),
+    new QuantumNetLib.Vec3(0, 1, 0)); // (0, 0, 1)
 ```
 
-# LINQ
-```c#
+### QLinq
+
+```csharp
 int[] numbers = { 1, 2, 3, 4 };
-var evenNumbers = QuantumNetLib.LINQ.Where(numbers, x => x % 2 == 0);
+var evens = QuantumNetLib.QLinq.Where(numbers, x => x % 2 == 0);
+var labels = QuantumNetLib.QLinq.Select(numbers, x => x.ToString());
 ```
 
-# Contributing
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
+## Contributing
 
-# License
-Distributed under the MIT License. See LICENSE for more information.
+Contributions are welcome — open a pull request with focused changes and tests where practical.
+
+## License
+
+Distributed under the MIT License. See `LICENSE.txt` for details.

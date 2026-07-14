@@ -1,8 +1,8 @@
-﻿namespace QuantumNetLib
+namespace QuantumNetLib
 {
-    public class Exception : System.Exception
+    public class QException : System.Exception
     {
-        public Exception(string message, int errorCode) : base(message)
+        public QException(string message, int errorCode) : base(message)
         {
             ErrorCode = errorCode;
         }
