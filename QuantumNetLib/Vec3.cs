@@ -13,6 +13,12 @@
         public float Y { get; set; }
         public float Z { get; set; }
 
+        public static Vec3 Zero => new Vec3(0f, 0f, 0f);
+        public static Vec3 One => new Vec3(1f, 1f, 1f);
+        public static Vec3 UnitX => new Vec3(1f, 0f, 0f);
+        public static Vec3 UnitY => new Vec3(0f, 1f, 0f);
+        public static Vec3 UnitZ => new Vec3(0f, 0f, 1f);
+
         public float Length => QMath.Sqrt(X * X + Y * Y + Z * Z);
 
         public float LengthSquared => X * X + Y * Y + Z * Z;
@@ -38,6 +44,11 @@
                 a.Y * b.Z - a.Z * b.Y,
                 a.Z * b.X - a.X * b.Z,
                 a.X * b.Y - a.Y * b.X);
+        }
+
+        public static float Distance(Vec3 a, Vec3 b)
+        {
+            return (a - b).Length;
         }
 
         public bool Equals(Vec3 other)

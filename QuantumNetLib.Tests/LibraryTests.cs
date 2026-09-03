@@ -195,4 +195,171 @@ namespace QuantumNetLib.Tests
             Assert.Equal(1f, new Vec3(0, 0, 1).Length, 5);
         }
     }
+
+    public class QMathGuardTests
+    {
+        [Fact]
+        public void Sqrt_Negative_Throws()
+        {
+            Assert.Throws<QException>(() => QMath.Sqrt(-1f));
+            Assert.Equal(3f, QMath.Sqrt(9f));
+        }
+
+        [Fact]
+        public void Log_NonPositive_Throws()
+        {
+            Assert.Throws<QException>(() => QMath.Log(0f));
+            Assert.Throws<QException>(() => QMath.Log(-2f));
+            Assert.Throws<QException>(() => QMath.Log10(0f));
+            Assert.Throws<QException>(() => QMath.Log2(-1f));
+        }
+
+        [Fact]
+        public void Log_BadBase_Throws()
+        {
+            Assert.Throws<QException>(() => QMath.Log(10f, 1f));
+            Assert.Throws<QException>(() => QMath.Log(10f, 0f));
+            Assert.Equal(2f, QMath.Log(100f, 10f), 4);
+        }
+
+        [Fact]
+        public void Clamp_MinGreaterMax_Throws()
+        {
+            Assert.Throws<QException>(() => QMath.Clamp(0f, 1f, 0f));
+            Assert.Equal(1f, QMath.Clamp(5f, 0f, 1f));
+        }
+
+        [Fact]
+        public void Map_EmptyRange_Throws()
+        {
+            Assert.Throws<QException>(() => QMath.Map(1f, 2f, 2f, 0f, 1f));
+            Assert.Equal(50f, QMath.Map(0.5f, 0f, 1f, 0f, 100f));
+        }
+
+        [Fact]
+        public void Random_StaysInRange()
+        {
+            for (var i = 0; i < 100; i++)
+            {
+                var value = QMath.Random(2f, 5f);
+                Assert.InRange(value, 2f, 5f);
+            }
+            Assert.Throws<QException>(() => QMath.Random(5f, 2f));
+        }
+    }
+
+    public class QRandomGuardTests
+    {
+        [Fact]
+        public void SameSeed_SameSequence()
+        {
+            var a = new QRandom(12345);
+            var b = new QRandom(12345);
+            Assert.Equal(a.Next(), b.Next());
+            Assert.Equal(a.Next(), b.Next());
+        }
+
+        [Fact]
+        public void RangedMethods_ValidateBounds()
+        {
+            var random = new QRandom(7);
+            Assert.Throws<QException>(() => random.NextFloat(5f, 2f));
+            Assert.Throws<QException>(() => random.NextDouble(5.0, 2.0));
+            Assert.Throws<QException>(() => random.NextBool(2f));
+            Assert.Throws<QException>(() => random.NextBool(-0.5));
+            Assert.Throws<QException>(() => random.GetRandomString(-1));
+        }
+
+        [Fact]
+        public void Choose_RejectsBadWeights()
+        {
+            var random = new QRandom(9);
+            Assert.Throws<QException>(() => random.Choose(new[] { "a", "b" }, new float[] { 0f, 0f }));
+            Assert.Throws<QException>(() => random.Choose(new[] { "a", "b" }, new float[] { 1f, -1f }));
+            Assert.Throws<QException>(() => random.Choose(new[] { "a", "b" }, new double[] { 0.0, 0.0 }));
+            Assert.Throws<QException>(() => random.Choose(new[] { "a", "b" }, new int[] { 1, -1 }));
+            Assert.Throws<QException>(() => random.Choose(new[] { "a", "b" }, new int[] { 0, 0 }));
+        }
+    }
+
+    public class VectorExtraTests
+    {
+        [Fact]
+        public void Sort_OrdersLargeInput()
+        {
+            var random = new QRandom(42);
+            var vector = new Vector<int>();
+            for (var i = 0; i < 200; i++) vector.PushBack(random.Next(0, 1000));
+            vector.Sort((a, b) => a.CompareTo(b));
+            var array = vector.ToArray();
+            for (var i = 1; i < array.Length; i++) Assert.True(array[i - 1] <= array[i]);
+        }
+
+        [Fact]
+        public void Clear_Add_Count_And_Enumeration()
+        {
+            var vector = new Vector<int>();
+            vector.Add(1);
+            vector.Add(2);
+            Assert.Equal(2, vector.Count);
+            var sum = 0;
+            foreach (var item in vector) sum += item;
+            Assert.Equal(3, sum);
+            vector.Clear();
+            Assert.Equal(0, vector.Size);
+            Assert.Empty(vector.ToArray());
+        }
+
+        [Fact]
+        public void ToString_FormatsWithSpaces()
+        {
+            var vector = new Vector<int>();
+            vector.PushBack(1);
+            vector.PushBack(2);
+            Assert.Equal("1 2 ", vector.ToString());
+            Assert.Equal("1\n2\n", vector.ToStringLine());
+        }
+    }
+
+    public class VecExtraTests
+    {
+        [Fact]
+        public void Units_And_Distance()
+        {
+            Assert.Equal(new Vec2(0f, 0f), Vec2.Zero);
+            Assert.Equal(new Vec2(1f, 0f), Vec2.UnitX);
+            Assert.Equal(new Vec2(0f, 1f), Vec2.UnitY);
+            Assert.Equal(5f, Vec2.Distance(new Vec2(0f, 0f), new Vec2(3f, 4f)), 5);
+            Assert.Equal(new Vec3(0f, 0f, 1f), Vec3.UnitZ);
+            Assert.Equal(5f, Vec3.Distance(Vec3.Zero, new Vec3(0f, 3f, 4f)), 5);
+        }
+    }
+
+    public class QExceptionTests
+    {
+        [Fact]
+        public void ToString_PreservesStackTrace()
+        {
+            QException caught = null;
+            try
+            {
+                throw new QException("boom", 7);
+            }
+            catch (QException ex)
+            {
+                caught = ex;
+            }
+            Assert.NotNull(caught);
+            var text = caught.ToString();
+            Assert.Contains("Error code: 7", text);
+            Assert.Contains("boom", text);
+            Assert.Contains(nameof(ToString_PreservesStackTrace), text);
+        }
+
+        [Fact]
+        public void MessageOnly_DefaultsErrorCode()
+        {
+            Assert.Equal(0, new QException("x").ErrorCode);
+        }
+    }
 }

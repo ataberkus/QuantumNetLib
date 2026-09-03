@@ -1,6 +1,6 @@
 ﻿namespace QuantumNetLib
 {
-    public class Vector<T>
+    public class Vector<T> : System.Collections.Generic.IEnumerable<T>
     {
         public delegate int Comparison(T x, T y);
 
@@ -22,6 +22,8 @@
         }
 
         public int Size { get; private set; }
+
+        public int Count => Size;
 
         public int Capacity => _data.Length;
 
@@ -58,6 +60,11 @@
             Size++;
         }
 
+        public void Add(T item)
+        {
+            PushBack(item);
+        }
+
         public void PopBack()
         {
             if (Size == 0) throw new QException("Vector is empty", 2);
@@ -65,11 +72,23 @@
             _data[Size] = default;
         }
 
+        public void RemoveLast()
+        {
+            PopBack();
+        }
+
+        public void Clear()
+        {
+            System.Array.Clear(_data, 0, Size);
+            Size = 0;
+        }
+
         public void Erase(int index)
         {
             if (index < 0 || index >= Size) throw new QException("Index out of range", 1);
 
-            for (var i = index; i < Size - 1; i++) _data[i] = _data[i + 1];
+            if (index < Size - 1)
+                System.Array.Copy(_data, index + 1, _data, index, Size - index - 1);
             Size--;
             _data[Size] = default;
         }
@@ -80,7 +99,8 @@
 
             EnsureCapacity(Size + 1);
 
-            for (var i = Size; i > index; i--) _data[i] = _data[i - 1];
+            if (index < Size)
+                System.Array.Copy(_data, index, _data, index + 1, Size - index);
             _data[index] = item;
             Size++;
         }
@@ -88,17 +108,12 @@
         public void Sort(Comparison comparison)
         {
             if (comparison == null) throw new QException("Comparison cannot be null", 4);
+            System.Array.Sort(_data, 0, Size, System.Collections.Generic.Comparer<T>.Create((x, y) => comparison(x, y)));
+        }
 
-            for (var i = 0; i < Size - 1; i++)
-            {
-                for (var j = 0; j < Size - i - 1; j++)
-                {
-                    if (comparison(_data[j], _data[j + 1]) > 0)
-                    {
-                        (_data[j], _data[j + 1]) = (_data[j + 1], _data[j]);
-                    }
-                }
-            }
+        public void Sort()
+        {
+            System.Array.Sort(_data, 0, Size);
         }
 
         public Vector<T> Clone()
@@ -111,16 +126,24 @@
 
         public override string ToString()
         {
-            var result = "";
-            for (var i = 0; i < Size; i++) result += _data[i] + " ";
-            return result;
+            var sb = new System.Text.StringBuilder();
+            for (var i = 0; i < Size; i++)
+            {
+                sb.Append(_data[i]);
+                sb.Append(' ');
+            }
+            return sb.ToString();
         }
 
         public string ToStringLine()
         {
-            var result = "";
-            for (var i = 0; i < Size; i++) result += _data[i] + "\n";
-            return result;
+            var sb = new System.Text.StringBuilder();
+            for (var i = 0; i < Size; i++)
+            {
+                sb.Append(_data[i]);
+                sb.Append('\n');
+            }
+            return sb.ToString();
         }
 
         public T[] ToArray()
@@ -128,6 +151,21 @@
             var result = new T[Size];
             System.Array.Copy(_data, result, Size);
             return result;
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            System.Array.Copy(_data, 0, array, arrayIndex, Size);
+        }
+
+        public System.Collections.Generic.IEnumerator<T> GetEnumerator()
+        {
+            for (var i = 0; i < Size; i++) yield return _data[i];
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

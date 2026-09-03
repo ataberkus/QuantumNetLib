@@ -11,6 +11,11 @@
         public float X { get; set; }
         public float Y { get; set; }
 
+        public static Vec2 Zero => new Vec2(0f, 0f);
+        public static Vec2 One => new Vec2(1f, 1f);
+        public static Vec2 UnitX => new Vec2(1f, 0f);
+        public static Vec2 UnitY => new Vec2(0f, 1f);
+
         public float Length => QMath.Sqrt(X * X + Y * Y);
 
         public float LengthSquared => X * X + Y * Y;
@@ -34,6 +39,11 @@
         public static float Cross(Vec2 a, Vec2 b)
         {
             return a.X * b.Y - a.Y * b.X;
+        }
+
+        public static float Distance(Vec2 a, Vec2 b)
+        {
+            return (a - b).Length;
         }
 
         public bool Equals(Vec2 other)

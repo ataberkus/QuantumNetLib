@@ -3,12 +3,14 @@ namespace QuantumNetLib
     /// <summary>
     /// Park–Miller LCG. Range methods use the same conventions as <see cref="System.Random"/>:
     /// <c>Next(min, max)</c> is inclusive of <paramref name="min"/> and exclusive of <paramref name="max"/>.
+    /// Instance members are thread-safe via an internal lock.
     /// </summary>
     public class QRandom
     {
         private const long A = 48271;
         private const long M = 2147483647; // 2^31 - 1
         private long _seed;
+        private readonly object _lock = new object();
 
         public QRandom(long seed)
         {
@@ -21,7 +23,12 @@ namespace QuantumNetLib
 
         private static long GenerateSeed()
         {
-            return System.DateTime.UtcNow.Ticks ^ System.Environment.TickCount;
+            unchecked
+            {
+                var time = System.DateTime.UtcNow.Ticks;
+                var guid = System.Guid.NewGuid().GetHashCode();
+                return NormalizeSeed(time ^ ((long)guid << 32));
+            }
         }
 
         private static long NormalizeSeed(long seed)
@@ -34,8 +41,11 @@ namespace QuantumNetLib
 
         public int Next()
         {
-            _seed = A * _seed % M;
-            return (int)_seed;
+            lock (_lock)
+            {
+                _seed = A * _seed % M;
+                return (int)_seed;
+            }
         }
 
         /// <summary>Returns a random integer in [<paramref name="min"/>, <paramref name="max"/>).</summary>
@@ -56,6 +66,8 @@ namespace QuantumNetLib
 
         public float NextFloat(float min, float max)
         {
+            if (max < min)
+                throw new QException("Maximum value must be greater than or equal to minimum value", 20);
             return NextFloat() * (max - min) + min;
         }
 
@@ -66,6 +78,8 @@ namespace QuantumNetLib
 
         public double NextDouble(double min, double max)
         {
+            if (max < min)
+                throw new QException("Maximum value must be greater than or equal to minimum value", 20);
             return NextDouble() * (max - min) + min;
         }
 
@@ -76,11 +90,15 @@ namespace QuantumNetLib
 
         public bool NextBool(float probability)
         {
+            if (probability < 0f || probability > 1f)
+                throw new QException("Probability must be in [0, 1]", 26);
             return NextFloat() < probability;
         }
 
         public bool NextBool(double probability)
         {
+            if (probability < 0.0 || probability > 1.0)
+                throw new QException("Probability must be in [0, 1]", 26);
             return NextDouble() < probability;
         }
 
@@ -121,7 +139,14 @@ namespace QuantumNetLib
         public T Choose<T>(T[] array, float[] probabilities)
         {
             ValidateWeighted(array, probabilities);
-            var sum = QLinq.Sum(probabilities);
+            var sum = 0f;
+            foreach (var p in probabilities)
+            {
+                if (p < 0f) throw new QException("Probabilities must be non-negative", 27);
+                sum += p;
+            }
+            if (sum <= 0f) throw new QException("Probability sum must be positive", 24);
+
             var random = NextFloat(0, sum);
             float cumulative = 0;
             for (var i = 0; i < probabilities.Length; i++)
@@ -137,7 +162,13 @@ namespace QuantumNetLib
         {
             ValidateWeighted(list, probabilities);
             float sum = 0;
-            for (var i = 0; i < probabilities.Size; i++) sum += probabilities[i];
+            for (var i = 0; i < probabilities.Size; i++)
+            {
+                var p = probabilities[i];
+                if (p < 0f) throw new QException("Probabilities must be non-negative", 27);
+                sum += p;
+            }
+            if (sum <= 0f) throw new QException("Probability sum must be positive", 24);
 
             var random = NextFloat(0, sum);
             float cumulative = 0;
@@ -153,7 +184,14 @@ namespace QuantumNetLib
         public T Choose<T>(T[] array, double[] probabilities)
         {
             ValidateWeighted(array, probabilities);
-            var sum = QLinq.Sum(probabilities);
+            var sum = 0.0;
+            foreach (var p in probabilities)
+            {
+                if (p < 0.0) throw new QException("Probabilities must be non-negative", 27);
+                sum += p;
+            }
+            if (sum <= 0.0) throw new QException("Probability sum must be positive", 24);
+
             var random = NextDouble(0, sum);
             double cumulative = 0;
             for (var i = 0; i < probabilities.Length; i++)
@@ -169,7 +207,13 @@ namespace QuantumNetLib
         {
             ValidateWeighted(list, probabilities);
             double sum = 0;
-            for (var i = 0; i < probabilities.Size; i++) sum += probabilities[i];
+            for (var i = 0; i < probabilities.Size; i++)
+            {
+                var p = probabilities[i];
+                if (p < 0.0) throw new QException("Probabilities must be non-negative", 27);
+                sum += p;
+            }
+            if (sum <= 0.0) throw new QException("Probability sum must be positive", 24);
 
             var random = NextDouble(0, sum);
             double cumulative = 0;
@@ -185,6 +229,8 @@ namespace QuantumNetLib
         public T Choose<T>(T[] array, int[] weights)
         {
             ValidateWeighted(array, weights);
+            foreach (var w in weights)
+                if (w < 0) throw new QException("Weights must be non-negative", 27);
             var sum = QLinq.Sum(weights);
             if (sum <= 0) throw new QException("Weight sum must be positive", 24);
 
@@ -203,7 +249,12 @@ namespace QuantumNetLib
         {
             ValidateWeighted(list, weights);
             var sum = 0;
-            for (var i = 0; i < weights.Size; i++) sum += weights[i];
+            for (var i = 0; i < weights.Size; i++)
+            {
+                var w = weights[i];
+                if (w < 0) throw new QException("Weights must be non-negative", 27);
+                sum += w;
+            }
             if (sum <= 0) throw new QException("Weight sum must be positive", 24);
 
             var random = Next(0, sum);

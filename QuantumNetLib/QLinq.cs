@@ -19,9 +19,9 @@ namespace QuantumNetLib
             if (array == null) throw new QException("Array cannot be null", 10);
             if (selector == null) throw new QException("Selector cannot be null", 11);
 
-            var result = new Vector<TResult>();
-            foreach (var item in array) result.PushBack(selector(item));
-            return result.ToArray();
+            var result = new TResult[array.Length];
+            for (var i = 0; i < array.Length; i++) result[i] = selector(array[i]);
+            return result;
         }
 
         public static TResult[] Select<T, TResult>(T[] array, System.Func<T, int, TResult> selector)
@@ -29,9 +29,9 @@ namespace QuantumNetLib
             if (array == null) throw new QException("Array cannot be null", 10);
             if (selector == null) throw new QException("Selector cannot be null", 11);
 
-            var result = new Vector<TResult>();
-            for (var i = 0; i < array.Length; i++) result.PushBack(selector(array[i], i));
-            return result.ToArray();
+            var result = new TResult[array.Length];
+            for (var i = 0; i < array.Length; i++) result[i] = selector(array[i], i);
+            return result;
         }
 
         public static TResult[] SelectMany<T, TResult>(T[] array, System.Func<T, TResult[]> selector)
